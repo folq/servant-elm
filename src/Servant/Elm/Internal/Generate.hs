@@ -302,7 +302,6 @@ mkLetParams opts request =
       case qarg ^. F.queryArgType of
         F.Normal ->
           let
-            argType = qarg ^. F.queryArgName . F.argType
             wrapped = isElmMaybeType argType
             -- Don't use "toString" on Elm Strings, otherwise we get extraneous quotes.
             toStringSrc =
@@ -322,10 +321,21 @@ mkLetParams opts request =
             indent 4 (dquotes empty)
 
         F.List ->
-            elmName <$>
-            indent 4 ("|> List.map" <+> parens (backslash <> "val ->" <+> dquotes (name <> "[]=") <+> "++ (val |> toString |> Http.encodeUri)") <$>
-                      "|> String.join" <+> dquotes "&")
+            let elementType =
+                  case argType of
+                    ElmPrimitive (EList et) -> et
+                    _ -> error "mkLetParams: QueryParams not a list"
+                toStringSrc =
+                  if isElmStringType opts elementType || isElmMaybeStringType opts elementType then
+                    ""
+                  else
+                    "toString |> "
+            in
+                elmName <$>
+                indent 4 ("|> List.map" <+> parens (backslash <> "val ->" <+> dquotes (name <> "[]=") <+> "++ (val |> " <> toStringSrc <> "Http.encodeUri)") <$>
+                          "|> String.join" <+> dquotes "&")
       where
+        argType = qarg ^. F.queryArgName . F.argType
         elmName = elmQueryArg qarg
         name = qarg ^. F.queryArgName . F.argName . to (stext . F.unPathSegment)
 
