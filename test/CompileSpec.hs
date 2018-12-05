@@ -7,7 +7,7 @@ import           Test.Hspec
 import           Test.Mockery.Directory
 
 import           Control.Exception
-import           Control.Monad                (when)
+import           Control.Monad                (unless)
 import           Data.String.Interpolate
 import           Data.String.Interpolate.Util
 import qualified Data.Text                    as T
@@ -31,9 +31,9 @@ main =
   hspec spec
 
 spec :: Test.Hspec.Spec
-spec = do
-  describe "generateElmForAPI" $ do
-    it "creates compilable javascript" $ do
+spec =
+  describe "generateElmForAPI" $
+    it "creates compilable javascript" $
       inTempElmDir $ do
         let generated =
               T.intercalate "\n\n" $
@@ -50,7 +50,7 @@ spec = do
 inTempElmDir :: IO a -> IO a
 inTempElmDir action = do
   cacheExists <- doesDirectoryExist "_test-cache"
-  when (not cacheExists)
+  unless cacheExists
     createCache
   cacheDir <- canonicalizePath "_test-cache"
   inTempDirectory $ do
@@ -61,7 +61,7 @@ createCache :: IO ()
 createCache = do
   createDirectoryIfMissing True "_test-cache"
   withCurrentDirectory "_test-cache" $ do
-    writeFile "elm-package.json" $ unindent $ [i|
+    writeFile "elm-package.json" $ unindent [i|
       {
           "version": "1.0.0",
           "summary": "helpful summary of your project, less than 80 characters",
