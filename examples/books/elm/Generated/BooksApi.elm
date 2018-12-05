@@ -5,6 +5,7 @@ import Json.Decode.Pipeline exposing (..)
 import Json.Encode
 import Http
 import String
+import Config
 
 
 type alias Book =
@@ -31,7 +32,7 @@ postBooks body =
             []
         , url =
             String.join "/"
-                [ "http://localhost:8000"
+                [ Config.api
                 , "books"
                 ]
         , body =
@@ -53,7 +54,7 @@ getBooks =
             []
         , url =
             String.join "/"
-                [ "http://localhost:8000"
+                [ Config.api
                 , "books"
                 ]
         , body =
@@ -75,7 +76,7 @@ getBooksByBookId capture_bookId =
             []
         , url =
             String.join "/"
-                [ "http://localhost:8000"
+                [ Config.api
                 , "books"
                 , capture_bookId |> toString |> Http.encodeUri
                 ]
