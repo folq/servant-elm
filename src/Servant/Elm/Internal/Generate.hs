@@ -45,6 +45,7 @@ data ElmOptions = ElmOptions
 
 data UrlPrefix
   = Static T.Text
+  | Variable T.Text
   | Dynamic
 
 
@@ -188,6 +189,7 @@ mkTypeSignature opts request =
     urlPrefixType =
         case (urlPrefix opts) of
           Dynamic -> Just "String"
+          Variable _ -> Nothing
           Static _ -> Nothing
 
     elmTypeRef :: ElmDatatype -> Doc
@@ -260,10 +262,11 @@ mkArgs
   -> F.Req ElmDatatype
   -> Doc
 mkArgs opts request =
-  (hsep . concat) $
+  (hsep . concat)
     [ -- Dynamic url prefix
       case urlPrefix opts of
         Dynamic -> ["urlBase"]
+        Variable _ -> []
         Static _ -> []
     , -- Headers
       [ elmHeaderArg header
@@ -366,7 +369,7 @@ mkRequest opts request =
             else
               " << toString"
       in
-        "Maybe.map" <+> parens (("Http.header" <+> dquotes headerName <> toStringSrc))
+        "Maybe.map" <+> parens ("Http.header" <+> dquotes headerName <> toStringSrc)
         <+>
         (if wrapped then headerArgName else parens ("Just" <+> headerArgName))
 
@@ -419,6 +422,7 @@ mkUrl opts segments =
   (indent i . elmList)
     ( case urlPrefix opts of
         Dynamic -> "urlBase"
+        Variable url -> stext url
         Static url -> dquotes (stext url)
       : map segmentToDoc segments)
   where
