@@ -8,9 +8,9 @@ import           Data.Proxy   (Proxy (Proxy))
 import           Data.Text    (Text)
 import           Elm          (ElmType)
 import           GHC.Generics (Generic)
-import           Servant.API  ((:<|>), (:>), Capture, Get, GetNoContent, Header,
+import           Servant.API  ((:<|>), (:>), Capture, Get, GetNoContent, Header, Header',
                                Headers, JSON, NoContent, Post, PostNoContent,
-                               Put, QueryFlag, QueryParam, QueryParams, ReqBody)
+                               Put, QueryFlag, QueryParam, QueryParams, ReqBody, Required)
 
 data Book = Book
     { title :: String
@@ -45,8 +45,8 @@ type TestApi =
   :<|> "nothing"
          :> Put '[JSON] () -- old way to specify no content
   :<|> "with-a-header"
-         :> Header "myStringHeader" String
-         :> Header "MyIntHeader" Int
+         :> Header' '[Required] "myStringHeader" String
+         :> Header' '[Required] "MyIntHeader" Int
          :> Get '[JSON] String
   :<|> "with-a-response-header"
          :> Get '[JSON] (Headers '[Header "myResponse" String] String)

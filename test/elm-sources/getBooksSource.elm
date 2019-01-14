@@ -19,7 +19,7 @@ getBooks toMsg query_published query_sort query_year query_filters =
                     |> Maybe.map (Url.percentEncode >> (++) "sort=")
                     |> Maybe.withDefault ""
                 , query_year
-                    |> Maybe.map (String.fromInt >>Url.percentEncode >> (++) "year=")
+                    |> Maybe.map (String.fromInt >> Url.percentEncode >> (++) "year=")
                     |> Maybe.withDefault ""
                 , query_filters
                     |> List.map (\val -> "filters[]=" ++ (val |> Maybe.map (String.fromBool) |> Maybe.withDefault "" |> Url.percentEncode))

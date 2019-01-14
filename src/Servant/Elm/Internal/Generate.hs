@@ -237,15 +237,8 @@ mkTypeSignature opts request =
 
     queryTypes :: [Doc]
     queryTypes =
-      [ arg ^. F.queryArgName . F.argType . to (elmTypeRef . wrapper)
+      [ arg ^. F.queryArgName . F.argType . to elmTypeRef
       | arg <- request ^. F.reqUrl . F.queryStr
-      , wrapper <- [
-          case arg ^. F.queryArgType of
-            F.Normal ->
-              Elm.ElmPrimitive . Elm.EMaybe
-            _ ->
-              id
-          ]
       ]
 
     bodyType :: Maybe Doc
@@ -329,14 +322,19 @@ mkLetParams opts request =
     paramToDoc qarg =
       -- something wrong with indentation here...
       case qarg ^. F.queryArgType of
-        F.Normal ->
-          let
-            toStringSrc' = toStringSrc ">>" opts (qarg ^. F.queryArgName . F.argType)
-          in
-              name <$>
-              indent 4 ("|> Maybe.map" <+> parens (toStringSrc' <> "Url.percentEncode >> (++)" <+> dquotes (elmName <> equals)) <$>
-                        "|> Maybe.withDefault" <+> dquotes empty)
+        F.Normal -> case qarg ^. F.queryArgName . F.argType of
+          (ElmPrimitive (EMaybe argType)) ->
+            let
+              toStringSrc' = toStringSrc ">>" opts argType
+            in
+                name <$>
+                indent 4 ("|> Maybe.map" <+> parens (toStringSrc' <+> "Url.percentEncode >> (++)" <+> dquotes (elmName <> equals)) <$>
+                          "|> Maybe.withDefault" <+> dquotes empty)
 
+          argType ->
+            name <$>
+            indent 4 ("|>" <+> toStringSrc "|>" opts argType <+> "Url.percentEncode |> (++)" <+>
+                dquotes (elmName <> equals))
         F.Flag ->
             "if" <+> name <+> "then" <$>
             indent 4 (dquotes (name <> equals)) <$>
