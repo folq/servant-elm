@@ -352,7 +352,7 @@ mkLetParams opts request =
                       "|> String.join" <+> dquotes "&")
       where
         name = elmQueryArg qarg
-        elmName= qarg ^. F.queryArgName . F.argName . to (stext . F.unPathSegment)
+        elmName = qarg ^. F.queryArgName . F.argName . to (stext . F.unPathSegment)
 
 
 mkRequest :: ElmOptions -> F.Req ElmDatatype -> Doc
