@@ -503,16 +503,16 @@ toStringSrc operator opts argType
   -- Don't use "toString" on Elm Strings, otherwise we get extraneous quotes.
   -- We don't append an operator in this case
   | isElmStringType opts argType = stext ""
-  | otherwise                    = stext $ toStringSrcTypes operator opts argType <> " " <> operator
+  | otherwise                    = stext $ toStringSrcTypes opts argType <> " " <> operator
 
 
-toStringSrcTypes :: T.Text -> ElmOptions -> ElmDatatype -> T.Text
-toStringSrcTypes operator opts (ElmPrimitive (EMaybe argType)) = "Maybe.map (" <> toStringSrcTypes operator opts argType <> ") |> Maybe.withDefault \"\""
+toStringSrcTypes :: ElmOptions -> ElmDatatype -> T.Text
+toStringSrcTypes opts (ElmPrimitive (EMaybe argType)) = "Maybe.map (" <> toStringSrcTypes opts argType <> ") |> Maybe.withDefault \"\""
  -- [Char] == String so we can just use identity here.
  -- We can't return `""` here, because this string might be nested in a `Maybe` or `List`.
-toStringSrcTypes _ _ (ElmPrimitive (EList (ElmPrimitive EChar))) = "identity"
-toStringSrcTypes operator opts (ElmPrimitive (EList argType)) = toStringSrcTypes operator opts argType
-toStringSrcTypes _ opts argType
+toStringSrcTypes _ (ElmPrimitive (EList (ElmPrimitive EChar))) = "identity"
+toStringSrcTypes opts (ElmPrimitive (EList argType)) = toStringSrcTypes opts argType
+toStringSrcTypes opts argType
     | isElmStringType opts argType   = "identity"
     | isElmIntType opts argType   = "String.fromInt"
     | isElmFloatType opts argType = "String.fromFloat"
